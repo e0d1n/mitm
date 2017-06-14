@@ -1,11 +1,12 @@
 package utils
 
 import (
-	"github.com/google/gopacket/pcap"
+	// "github.com/google/gopacket/pcap"
+	"net"
 )
 
 // IndexDeviceByName returns the index of the device given the name, -1 if not found
-func IndexDeviceByName(devices []pcap.Interface, name string) int {
+func IndexDeviceByName(devices []net.Interface, name string) int {
 	for i, device := range devices {
 		if device.Name == name {
 			return i
