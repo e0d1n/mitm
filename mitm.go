@@ -19,6 +19,7 @@ func main() {
 	promiscuous := true
 	snapshot_len := 1024
 	timeout := time.Duration(-1) * time.Second
+	arp_timeout := 1
 
 	i := flag.String("i", "en0", "Interface to listen on")
 	g := flag.String("g", "192.168.1.1", "Gateway Ip address")
@@ -72,7 +73,7 @@ func main() {
 
 	// Process responses, and keep feeding the arp_channel with not know response
 	go func() {
-		done_ip := [][]byte{}
+		doneIP := [][]byte{}
 		// Send the first arps
 		for _, a := range arps {
 			arp_channel <- a.Ip
@@ -90,11 +91,11 @@ func main() {
 				ip := resp.IP
 				fmt.Println("Got response")
 				fmt.Println(resp)
-				if arp.IndexByte(done_ip, ip) == -1 {
+				if arp.IndexByte(doneIP, ip) == -1 {
 					if i := arp.IndexNode(arps, ip); i >= 0 {
 						arps[i].Hw = resp.HW
-						done_ip = append(done_ip, ip)
-						if len(arps) == len(done_ip) {
+						doneIP = append(doneIP, ip)
+						if len(arps) == len(doneIP) {
 							fmt.Println("DONE")
 							done <- true
 							return
@@ -116,7 +117,7 @@ func main() {
 		go func() {
 			for {
 				arp.SpoofARP(handle, &table)
-				time.Sleep(2 * time.Second)
+				time.Sleep(time.Duration(arp_timeout) * time.Second)
 			}
 		}()
 		<-attack
